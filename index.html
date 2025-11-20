@@ -209,16 +209,25 @@
 
 <!-- Farcaster SDK -->
 <script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
+<script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
 <script>
-  // Ensure all content is loaded before notifying Farcaster
   window.addEventListener("load", () => {
+    // Give particles time to finish initializing
     setTimeout(() => {
-      if (window.sdk?.actions?.ready) {
-        sdk.actions.ready();
+      try {
+        if (window.sdk?.actions?.ready) {
+          console.log("Calling sdk.actions.ready()");
+          sdk.actions.ready();
+        } else {
+          console.error("SDK not ready");
+        }
+      } catch (err) {
+        console.error("Error calling ready():", err);
       }
-    }, 300); // allows particles + UI to finish loading
+    }, 500);
   });
 </script>
 
 </body>
 </html>
+

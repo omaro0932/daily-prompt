@@ -1,7 +1,4 @@
 {
-
-  
- 
   "name": "DailyPrompt",
   "subtitle": "Fresh creative prompts every day",
   "startUrl": "https://dailyprompt-tawny.vercel.app",
@@ -11,14 +8,10 @@
   "splashBackgroundColor": "#6C5CE7",
   "aboutUrl": "https://github.com/YOUR_USERNAME/daily-prompt",
   "iconUrl": "https://client.warpcast.com/og-image.png",
-  "ogImageUrl": "https://client.warpcast.com/og-image.png"
-
-   "accountAssociation": {
+  "ogImageUrl": "https://client.warpcast.com/og-image.png",
+  "accountAssociation": {
     "header": "eyJmaWQiOjI2MzI2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEIxNzE4MjhhQTU3NDM3MEJiNWNEMjlFMUY0YjczQTYzNERGOTQxMUQifQ",
     "payload": "eyJkb21haW4iOiJkYWlseS1wcm9tcHQteGkudmVyY2VsLmFwcCJ9",
     "signature": "rDkWtoZewhM27x+Im0U+DTiwYLl/FopSh7oFUwwmRwEhLEOJR3fOH5i3UlYTUnv+z7z3wc/2fEw9SKBqqgcPqhs="
   }
-
-  
-  
 }

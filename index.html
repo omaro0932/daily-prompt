@@ -202,18 +202,23 @@
 
 <!-- Farcaster SDK -->
 <script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
+<!-- Farcaster SDK -->
+<script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
 <script>
-  function waitForSdkReady() {
-    if (window.sdk?.actions?.ready) {
-      console.log("Calling sdk.actions.ready()");
-      sdk.actions.ready();
-    } else {
-      setTimeout(waitForSdkReady, 100);
+  window.addEventListener("DOMContentLoaded", async () => {
+    try {
+      if (window.sdk?.actions?.ready) {
+        await sdk.actions.ready();
+        console.log("SDK ready — splash should hide");
+      } else {
+        console.error("SDK not available");
+      }
+    } catch (err) {
+      console.error("Error calling sdk.actions.ready():", err);
     }
-  }
-
-  window.addEventListener("load", waitForSdkReady);
+  });
 </script>
 
 </body>
 </html>
+

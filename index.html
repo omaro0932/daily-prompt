@@ -130,9 +130,7 @@
 
 <!-- Particles -->
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
-
 <script>
-  // Particles
   tsParticles.load("particles", {
     particles: {
       number: { value: 45 },
@@ -160,7 +158,6 @@
   const promptEl = document.getElementById("prompt");
   const streakEl = document.getElementById("streak");
 
-  // Streak system
   let streak = parseInt(localStorage.getItem("streak")) || 0;
   let lastDate = localStorage.getItem("lastDate");
 
@@ -177,7 +174,6 @@
 
   updateStreak();
 
-  // Surprise prompt
   document.getElementById("surpriseBtn").onclick = () => {
     const random = prompts[Math.floor(Math.random() * prompts.length)];
     promptEl.style.opacity = 0;
@@ -188,20 +184,17 @@
     updateStreak();
   };
 
-  // Share
   document.getElementById("shareBtn").onclick = () => {
     navigator.clipboard.writeText(promptEl.innerText);
     alert("Prompt copied!");
   };
 
-  // Theme toggle
   const themeBtn = document.getElementById("themeBtn");
   themeBtn.onclick = () => {
     document.body.classList.toggle("dark");
     localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
   };
 
-  // Restore theme
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
   }
@@ -209,29 +202,18 @@
 
 <!-- Farcaster SDK -->
 <script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
-<script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
 <script>
-  window.addEventListener("load", () => {
-    // Give particles time to finish initializing
-    setTimeout(() => {
-      try {
-        if (window.sdk?.actions?.ready) {
-          console.log("Calling sdk.actions.ready()");
-         
+  function waitForSdkReady() {
+    if (window.sdk?.actions?.ready) {
+      console.log("Calling sdk.actions.ready()");
+      sdk.actions.ready();
+    } else {
+      setTimeout(waitForSdkReady, 100);
+    }
+  }
 
-          sdk.actions.ready();
-        } else {
-          console.error("SDK not ready");
-        }
-      } catch (err) {
-        console.error("Error calling ready():", err);
-      }
-    }, 500);
-  });
+  window.addEventListener("load", waitForSdkReady);
 </script>
 
 </body>
 </html>
-
-
-

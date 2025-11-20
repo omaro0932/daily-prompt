@@ -1,6 +1,14 @@
 {
+  
+  "accountAssociation": {
+    "header": "eyJmaWQiOjI2MzI2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEIxNzE4MjhhQTU3NDM3MEJiNWNEMjlFMUY0YjczQTYzNERGOTQxMUQifQ",
+    "payload": "eyJkb21haW4iOiJkYWlseS1wcm9tcHQteGkudmVyY2VsLmFwcCJ9",
+    "signature": "rDkWtoZewhM27x+Im0U+DTiwYLl/FopSh7oFUwwmRwEhLEOJR3fOH5i3UlYTUnv+z7z3wc/2fEw9SKBqqgcPqhs="
+                        }
+
   "name": "DailyPrompt",
   "startUrl": "https://daily-prompt-xi.vercel.app",
   "domain": "daily-prompt-xi.vercel.app",
   "splashBackgroundColor": "#6C5CE7"
+  
 }

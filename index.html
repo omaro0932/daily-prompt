@@ -1,34 +1,110 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DailyPrompt</title>
-
-  <!-- ESM CDN for SDK (no npm required) -->
-  <script type="module">
-    import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk';
-
-    // When app is ready, hide splash and show content
-    async function start() {
-      // signal Farcaster that the mini-app UI is ready
-      await sdk.actions.ready();
-      // simple example: get user and enable post button
-      const ctx = await sdk.context();
-      document.getElementById('who').innerText = ctx?.user?.username || 'guest';
-      document.getElementById('postBtn').onclick = async () => {
-        await sdk.post('🗣️ Quick prompt: What inspired you today?');
-        alert('Posted!');
-      };
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #6C5CE7, #A29BFE);
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+      transition: background 0.5s;
     }
-    start().catch(console.error);
-  </script>
-
-  <style>body{font-family:sans-serif;padding:20px}</style>
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+    #prompt {
+      font-size: 1.5em;
+      margin: 20px 0;
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button {
+      padding: 15px 25px;
+      margin: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #fd79a8;
+      color: #fff;
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    #streak {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    .dark {
+      background: linear-gradient(135deg, #2d3436, #636e72);
+    }
+  </style>
 </head>
 <body>
-  <h2>DailyPrompt</h2>
-  <div>Signed in as: <span id="who">loading…</span></div>
-  <button id="postBtn">Post today’s prompt</button>
+
+  <h1>DailyPrompt</h1>
+
+  <div id="prompt">Click "Surprise Me!" for a prompt!</div>
+
+  <button id="surpriseBtn">Surprise Me!</button>
+  <button id="shareBtn">Share Prompt</button>
+  <button id="themeBtn">Toggle Theme</button>
+
+  <div id="streak">Your streak: 0 days</div>
+
+  <script>
+    const prompts = [
+      "Write a short story in 100 words",
+      "Draw something that represents happiness",
+      "Post a fun fact about your day",
+      "Create a micro-poem about the weather",
+      "Describe a dream you had recently",
+      "Make a list of 5 things that inspire you",
+      "Write a tiny joke and share it",
+      "Describe a color without naming it"
+    ];
+
+    const promptEl = document.getElementById("prompt");
+    const streakEl = document.getElementById("streak");
+
+    // Load streak from localStorage
+    let streak = localStorage.getItem("streak") || 0;
+    streakEl.innerText = `Your streak: ${streak} days`;
+
+    function showPrompt() {
+      const random = prompts[Math.floor(Math.random() * prompts.length)];
+      promptEl.innerText = random;
+      streak++;
+      localStorage.setItem("streak", streak);
+      streakEl.innerText = `Your streak: ${streak} days`;
+    }
+
+    document.getElementById("surpriseBtn").onclick = showPrompt;
+
+    // Share prompt
+    document.getElementById("shareBtn").onclick = () => {
+      const text = promptEl.innerText;
+      navigator.clipboard.writeText(text);
+      alert("Prompt copied! Share it with your friends.");
+    };
+
+    // Toggle theme
+    document.getElementById("themeBtn").onclick = () => {
+      document.body.classList.toggle("dark");
+    };
+  </script>
+
 </body>
 </html>

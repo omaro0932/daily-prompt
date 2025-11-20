@@ -1,12 +1,12 @@
 {
   "name": "DailyPrompt",
   "subtitle": "Fresh creative prompts every day",
-  "startUrl": "https://dailyprompt-tawny.vercel.app",
-  "domain": "dailyprompt-tawny.vercel.app",
+  "startUrl": "https://daily-prompt-xi.vercel.app",
+  "domain": "daily-prompt-xi.vercel.app",
   "description": "A simple daily prompt mini app that lets users post in one tap.",
   "primaryCategory": "Productivity",
   "splashBackgroundColor": "#6C5CE7",
-  "aboutUrl": "https://github.com/YOUR_USERNAME/daily-prompt",
+  "aboutUrl": "https://github.com/omaro0932/daily-prompt",
   "iconUrl": "https://client.warpcast.com/og-image.png",
   "ogImageUrl": "https://client.warpcast.com/og-image.png",
   "accountAssociation": {

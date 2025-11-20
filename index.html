@@ -32,34 +32,70 @@
 <script>
   tsParticles.load("particles",{particles:{number:{value:45},size:{value:3},move:{speed:1},links:{enable:true,distance:130},color:{value:["#fd79a8","#6C5CE7","#FFEAA7"]}}});
   
-  const prompts=["Write a story in one sentence.","Describe your day using only emojis.","Invent a new holiday and explain it.","Write a haiku about your mood.","Create a motivational quote.","Describe a scene from a movie that doesn’t exist.","Explain a random fact you love.","Write a 3-word horror story.","Describe a color without naming it.","Invent a new superpower."];
+  const prompts=["Write a story in one sentence.","Describe your day using only emojis.","Invent a new holiday and explain it.","Write a haiku about your mood.","Create a motivational quote.","Describe a scene from a movie that doesn't exist.","Explain a random fact you love.","Write a 3-word horror story.","Describe a color without naming it.","Invent a new superpower."];
   const promptEl=document.getElementById("prompt");
   const streakEl=document.getElementById("streak");
-  let streak=parseInt(localStorage.getItem("streak"))||0;
-  let lastDate=localStorage.getItem("lastDate");
-  function updateStreak(){const today=new Date().toISOString().slice(0,10);if(lastDate!==today){streak++;lastDate=today;localStorage.setItem("streak",streak);localStorage.setItem("lastDate",lastDate);}streakEl.innerText=`Your streak: ${streak} days`;}
+  
+  // Use in-memory storage instead of localStorage (not supported in Farcaster frames)
+  let streak = 0;
+  let lastDate = null;
+  
+  function updateStreak(){
+    const today=new Date().toISOString().slice(0,10);
+    if(lastDate!==today){
+      streak++;
+      lastDate=today;
+    }
+    streakEl.innerText=`Your streak: ${streak} days`;
+  }
+  
   updateStreak();
-  document.getElementById("surpriseBtn").onclick=()=>{const random=prompts[Math.floor(Math.random()*prompts.length)];promptEl.style.opacity=0;setTimeout(()=>{promptEl.innerText=random;promptEl.style.opacity=1;},200);updateStreak();};
-  document.getElementById("shareBtn").onclick=()=>{navigator.clipboard.writeText(promptEl.innerText);alert("Prompt copied!");};
-  const themeBtn=document.getElementById("themeBtn");themeBtn.onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("theme",document.body.classList.contains("dark")?"dark":"light");};
-  if(localStorage.getItem("theme")==="dark"){document.body.classList.add("dark");}
+  
+  document.getElementById("surpriseBtn").onclick=()=>{
+    const random=prompts[Math.floor(Math.random()*prompts.length)];
+    promptEl.style.opacity=0;
+    setTimeout(()=>{
+      promptEl.innerText=random;
+      promptEl.style.opacity=1;
+    },200);
+    updateStreak();
+  };
+  
+  document.getElementById("shareBtn").onclick=()=>{
+    navigator.clipboard.writeText(promptEl.innerText);
+    alert("Prompt copied!");
+  };
+  
+  const themeBtn=document.getElementById("themeBtn");
+  themeBtn.onclick=()=>{
+    document.body.classList.toggle("dark");
+  };
 </script>
 
 <!-- Farcaster SDK -->
 <script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
 <script>
-  window.addEventListener("DOMContentLoaded", async () => {
-    try {
-      if (window.sdk?.actions?.ready) {
-        await sdk.actions.ready();
-        console.log("SDK ready — splash should hide");
-      } else {
-        console.error("SDK not available");
+  // Wait for SDK to be fully loaded
+  function initSDK() {
+    if (window.sdk?.actions?.ready) {
+      try {
+        window.sdk.actions.ready();
+        console.log("✅ SDK ready called - splash screen should hide");
+      } catch (err) {
+        console.error("❌ Error calling sdk.actions.ready():", err);
       }
-    } catch (err) {
-      console.error("Error calling sdk.actions.ready():", err);
+    } else {
+      console.log("⏳ SDK not ready yet, retrying...");
+      setTimeout(initSDK, 100);
     }
-  });
+  }
+
+  // Start trying to initialize once DOM is loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSDK);
+  } else {
+    initSDK();
+  }
 </script>
 
 </body>

@@ -166,13 +166,16 @@
     };
   </script>
 <script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
+<script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
 <script>
-  // Tell Farcaster your app is ready
-  if (window.sdk && sdk.actions && sdk.actions.ready) {
-    sdk.actions.ready();
-  }
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.sdk?.actions?.ready) {
+      sdk.actions.ready();
+    }
+  });
 </script>
 
 </body>
 </html>
+
 

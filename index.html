@@ -217,6 +217,8 @@
       try {
         if (window.sdk?.actions?.ready) {
           console.log("Calling sdk.actions.ready()");
+         console.log("SDK object:", window.sdk);
+
           sdk.actions.ready();
         } else {
           console.error("SDK not ready");
@@ -230,4 +232,5 @@
 
 </body>
 </html>
+
 

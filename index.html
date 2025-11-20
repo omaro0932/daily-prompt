@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>DailyPrompt</title>
+
+  <!-- ESM CDN for SDK (no npm required) -->
+  <script type="module">
+    import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk';
+
+    // When app is ready, hide splash and show content
+    async function start() {
+      // signal Farcaster that the mini-app UI is ready
+      await sdk.actions.ready();
+      // simple example: get user and enable post button
+      const ctx = await sdk.context();
+      document.getElementById('who').innerText = ctx?.user?.username || 'guest';
+      document.getElementById('postBtn').onclick = async () => {
+        await sdk.post('🗣️ Quick prompt: What inspired you today?');
+        alert('Posted!');
+      };
+    }
+    start().catch(console.error);
+  </script>
+
+  <style>body{font-family:sans-serif;padding:20px}</style>
+</head>
+<body>
+  <h2>DailyPrompt</h2>
+  <div>Signed in as: <span id="who">loading…</span></div>
+  <button id="postBtn">Post today’s prompt</button>
+</body>
+</html>

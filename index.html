@@ -4,55 +4,88 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DailyPrompt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       background: linear-gradient(135deg, #6C5CE7, #A29BFE);
       color: #fff;
-      text-align: center;
-      padding: 50px;
+      overflow: hidden;
       transition: background 0.5s;
     }
+
     h1 {
-      font-size: 2.5em;
+      font-size: 3em;
       margin-bottom: 20px;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
     }
+
     #prompt {
       font-size: 1.5em;
       margin: 20px 0;
       padding: 20px;
       background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      min-height: 80px;
+      border-radius: 15px;
+      min-height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.3s;
     }
+
+    #prompt.animate {
+      transform: scale(1.05);
+    }
+
     button {
       padding: 15px 25px;
       margin: 10px;
       font-size: 1em;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       background: #fd79a8;
       color: #fff;
       transition: all 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
+
     button:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
     }
+
     #streak {
       margin-top: 20px;
       font-size: 1.2em;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
     }
+
     .dark {
       background: linear-gradient(135deg, #2d3436, #636e72);
+    }
+
+    /* Particle background */
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
     }
   </style>
 </head>
 <body>
+
+  <div id="particles"></div>
 
   <h1>DailyPrompt</h1>
 
@@ -64,7 +97,20 @@
 
   <div id="streak">Your streak: 0 days</div>
 
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
   <script>
+    // ---------- PARTICLE EFFECT ----------
+    tsParticles.load("particles", {
+      particles: {
+        number: { value: 50 },
+        size: { value: 3 },
+        move: { speed: 1 },
+        links: { enable: true, distance: 150 },
+        color: { value: ["#fd79a8", "#6C5CE7", "#FFEAA7"] }
+      }
+    });
+
+    // ---------- PROMPTS ----------
     const prompts = [
       "Write a short story in 100 words",
       "Draw something that represents happiness",
@@ -73,34 +119,48 @@
       "Describe a dream you had recently",
       "Make a list of 5 things that inspire you",
       "Write a tiny joke and share it",
-      "Describe a color without naming it"
+      "Describe a color without naming it",
+      "Invent a new emoji and describe it",
+      "Create a haiku about today"
     ];
 
     const promptEl = document.getElementById("prompt");
     const streakEl = document.getElementById("streak");
 
-    // Load streak from localStorage
-    let streak = localStorage.getItem("streak") || 0;
+    // ---------- STREAK ----------
+    let streak = parseInt(localStorage.getItem("streak")) || 0;
+    let lastDate = localStorage.getItem("lastDate");
+
     streakEl.innerText = `Your streak: ${streak} days`;
 
     function showPrompt() {
       const random = prompts[Math.floor(Math.random() * prompts.length)];
       promptEl.innerText = random;
-      streak++;
-      localStorage.setItem("streak", streak);
+      promptEl.classList.add("animate");
+      setTimeout(() => promptEl.classList.remove("animate"), 300);
+
+      // Increment streak only once per day
+      const today = new Date().toISOString().slice(0,10);
+      if (lastDate !== today) {
+        streak++;
+        lastDate = today;
+        localStorage.setItem("streak", streak);
+        localStorage.setItem("lastDate", lastDate);
+      }
+
       streakEl.innerText = `Your streak: ${streak} days`;
     }
 
     document.getElementById("surpriseBtn").onclick = showPrompt;
 
-    // Share prompt
+    // ---------- SHARE ----------
     document.getElementById("shareBtn").onclick = () => {
       const text = promptEl.innerText;
       navigator.clipboard.writeText(text);
       alert("Prompt copied! Share it with your friends.");
     };
 
-    // Toggle theme
+    // ---------- THEME TOGGLE ----------
     document.getElementById("themeBtn").onclick = () => {
       document.body.classList.toggle("dark");
     };

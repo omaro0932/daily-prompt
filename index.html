@@ -73,13 +73,13 @@
 </script>
 
 <!-- Farcaster SDK -->
-<script src="https://cdn.farcaster.xyz/sdk.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
 <script>
   // Wait for SDK to be fully loaded
   function initSDK() {
-    if (window.sdk?.actions?.ready) {
+    if (window.frame?.sdk?.actions?.ready) {
       try {
-        window.sdk.actions.ready();
+        window.frame.sdk.actions.ready();
         console.log("✅ SDK ready called - splash screen should hide");
       } catch (err) {
         console.error("❌ Error calling sdk.actions.ready():", err);

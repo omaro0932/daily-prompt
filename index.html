@@ -371,6 +371,27 @@
   // Check if we're in Farcaster environment with storage
   const hasStorage = typeof window.storage !== 'undefined';
   
+  // Get user info from Farcaster context
+  let currentUser = { fid: null, username: 'You', displayName: 'You' };
+  
+  async function initUser() {
+    if (window.frame?.sdk?.context) {
+      try {
+        const context = await window.frame.sdk.context;
+        if (context?.user) {
+          currentUser = {
+            fid: context.user.fid,
+            username: context.user.username || 'user',
+            displayName: context.user.displayName || context.user.username || 'You'
+          };
+          console.log('User initialized:', currentUser);
+        }
+      } catch (err) {
+        console.log('Using default user (not in Farcaster)');
+      }
+    }
+  }
+  
   // DOM elements
   const el = {
     prompt: document.getElementById("prompt"),
@@ -427,10 +448,13 @@
       const lb = await window.storage.get('dailyprompt-leaderboard', true);
       let leaderboard = lb && lb.value ? JSON.parse(lb.value) : [];
       
-      const userIndex = leaderboard.findIndex(u => u.id === 'user');
+      // Use actual Farcaster user info
+      const userId = currentUser.fid || 'local';
+      const userIndex = leaderboard.findIndex(u => u.id === userId);
       const userData = {
-        id: 'user',
-        name: 'You',
+        id: userId,
+        name: currentUser.displayName,
+        username: currentUser.username,
         streak: state.streak,
         prompts: state.totalPrompts,
         level: state.level,
@@ -712,9 +736,17 @@
     const leaderboardHTML = state.leaderboard.length > 0 
       ? state.leaderboard.map((user, i) => {
           const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+          const isCurrentUser = user.id === currentUser.fid || user.id === 'local';
+          const displayName = isCurrentUser ? `${user.name} (You)` : user.name;
+          const style = isCurrentUser ? 'background:rgba(240,147,251,0.2);' : '';
+          
           return `
-            <div class="leaderboard-item">
-              <span><span class="leaderboard-rank">${medal}</span> ${user.name}</span>
+            <div class="leaderboard-item" style="${style}">
+              <span>
+                <span class="leaderboard-rank">${medal}</span> 
+                ${displayName}
+                ${user.username ? `<span style="opacity:0.7;font-size:0.9em;">@${user.username}</span>` : ''}
+              </span>
               <span style="font-weight:700;">${user.score} pts</span>
             </div>
           `;
@@ -743,7 +775,9 @@
   }
   
   // Initialize
-  loadState().then(() => {
+  initUser().then(() => {
+    return loadState();
+  }).then(() => {
     updateUI();
     if (state.theme !== 'default') {
       document.body.className = state.theme;

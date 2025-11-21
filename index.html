@@ -59,12 +59,18 @@
       promptEl.style.opacity=1;
     },200);
     updateStreak();
+
+    
+    
   };
   
-  document.getElementById("shareBtn").onclick=()=>{
-    navigator.clipboard.writeText(promptEl.innerText);
-    alert("Prompt copied!");
+ document.getElementById("shareBtn").onclick = () => {
+  window.location.href = `/api/share?text=${encodeURIComponent(promptEl.innerText)}`;
+
+
   };
+
+
   
   const themeBtn=document.getElementById("themeBtn");
   themeBtn.onclick=()=>{
@@ -100,3 +106,4 @@
 
 </body>
 </html>
+

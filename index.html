@@ -1,3 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DailyPrompt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    :root { 
+      --bg1:#667eea;--bg2:#764ba2;--text:#fff;--card-bg:rgba(255,255,255,0.12);
+      --accent:#f093fb;--secondary:#4facfe;--success:#00f2c3;--gold:#ffd700;
+      --shadow:rgba(0,0,0,0.3);--glow:rgba(240,147,251,0.4);
+    }
+    body.dark { 
+      --bg1:#0f0c29;--bg2:#302b63;--text:#fff;--card-bg:rgba(255,255,255,0.08);
+      --accent:#ff6bcb;--secondary:#4facfe;--shadow:rgba(0,0,0,0.6);
+    }
+    body.cosmic { 
+      --bg1:#232526;--bg2:#414345;--text:#fff;--card-bg:rgba(255,255,255,0.1);
+      --accent:#f857a6;--secondary:#ff5858;
+    }
+    body.ocean { 
+      --bg1:#2e3192;--bg2:#1bffff;--text:#fff;--card-bg:rgba(255,255,255,0.15);
+      --accent:#00d4ff;--secondary:#7b2cbf;
+    }
+    body { 
+      margin:0;font-family:'Inter',sans-serif;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--text);min-height:100vh;overflow-x:hidden;
+      transition:background 0.6s ease;position:relative;
+    }
+    #particles { position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+    .container { position:relative;z-index:1;max-width:500px;margin:0 auto;padding:20px; }
+    
+    .header { text-align:center;margin-bottom:20px;position:relative; }
+    h1 { 
+      font-size:2.8em;margin:10px 0;font-weight:800;
+      background:linear-gradient(45deg,var(--accent),var(--secondary));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;animation:slideDown 0.5s ease;
+      text-shadow:0 0 30px var(--glow);
+    }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-30px);} to{opacity:1;transform:translateY(0);} }
+    
+    .crown { font-size:2em;display:inline-block;animation:bounce 2s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    
+    .stats { 
+      display:flex;justify-content:space-around;margin:20px 0;gap:10px;
+      animation:fadeIn 0.6s ease 0.2s both;
+    }
+    .stat-card { 
+      background:var(--card-bg);backdrop-filter:blur(15px);
+      padding:15px;border-radius:16px;flex:1;text-align:center;
+      box-shadow:0 8px 32px var(--shadow);border:1px solid rgba(255,255,255,0.1);
+      transition:transform 0.3s ease;
+    }
+    .stat-card:hover { transform:translateY(-5px) scale(1.05); }
+    .stat-value { font-size:2em;font-weight:700;color:var(--accent);display:block; }
+    .stat-label { font-size:0.85em;opacity:0.9;margin-top:5px; }
+    
+    #promptCard { 
+      background:var(--card-bg);backdrop-filter:blur(20px);
+      padding:30px;border-radius:24px;min-height:180px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      box-shadow:0 12px 48px var(--shadow), 0 0 0 1px rgba(255,255,255,0.1);
+      margin:20px 0;position:relative;overflow:hidden;
+      animation:fadeIn 0.6s ease 0.3s both;
+      transition:all 0.4s ease;
+    }
+    #promptCard:hover { box-shadow:0 16px 64px var(--shadow), 0 0 40px var(--glow); }
+    #promptCard::before {
+      content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+      background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);
+      animation:rotate 8s linear infinite;pointer-events:none;
+    }
+    @keyframes rotate { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+    
+    #prompt { 
+      font-size:1.35em;line-height:1.5em;text-align:center;z-index:1;
+      font-weight:600;letter-spacing:0.3px;
+    }
+    .prompt-category { 
+      display:inline-block;padding:6px 14px;background:var(--accent);
+      border-radius:20px;font-size:0.75em;margin-top:15px;font-weight:600;
+      text-transform:uppercase;letter-spacing:1px;
+    }
+    
+    .btn-group { display:flex;flex-direction:column;gap:12px;margin:20px 0; }
+    .btn { 
+      width:100%;padding:16px;border:none;border-radius:16px;
+      font-size:1.05em;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 20px var(--shadow);
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      position:relative;overflow:hidden;letter-spacing:0.5px;
+    }
+    .btn::before {
+      content:'';position:absolute;top:50%;left:50%;width:0;height:0;
+      border-radius:50%;background:rgba(255,255,255,0.3);
+      transform:translate(-50%,-50%);transition:width 0.6s,height 0.6s;
+    }
+    .btn:active::before { width:300px;height:300px; }
+    .btn-primary { 
+      background:linear-gradient(135deg,var(--accent),var(--secondary));
+      color:#fff;animation:fadeIn 0.6s ease 0.4s both;
+    }
+    .btn-primary:hover { transform:translateY(-3px) scale(1.02);box-shadow:0 12px 32px var(--glow); }
+    .btn-secondary { 
+      background:var(--card-bg);backdrop-filter:blur(10px);color:var(--text);
+      border:2px solid rgba(255,255,255,0.2);animation:fadeIn 0.6s ease 0.5s both;
+    }
+    .btn-secondary:hover { transform:translateY(-2px);border-color:var(--accent); }
+    
+    .categories { 
+      display:flex;gap:8px;flex-wrap:wrap;margin:20px 0;
+      animation:fadeIn 0.6s ease 0.6s both;
+    }
+    .category-btn { 
+      padding:10px 16px;border-radius:20px;border:2px solid rgba(255,255,255,0.2);
+      background:var(--card-bg);backdrop-filter:blur(10px);color:var(--text);
+      font-size:0.9em;cursor:pointer;transition:all 0.3s ease;font-weight:600;
+    }
+    .category-btn:hover { border-color:var(--accent);transform:scale(1.05); }
+    .category-btn.active { 
+      background:linear-gradient(135deg,var(--accent),var(--secondary));
+      border-color:transparent;box-shadow:0 4px 12px var(--glow);
+    }
+    
+    .achievement { 
+      position:fixed;top:-100px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,var(--gold),#ffa500);
+      color:#000;padding:20px 30px;border-radius:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.5);z-index:1000;
+      font-weight:700;font-size:1.1em;transition:top 0.5s ease;
+      display:flex;align-items:center;gap:12px;
+    }
+    .achievement.show { top:20px; }
+    .achievement-icon { font-size:2em;animation:rotate 1s ease; }
+    
+    .theme-selector { 
+      display:flex;gap:10px;justify-content:center;margin:20px 0;
+      animation:fadeIn 0.6s ease 0.7s both;
+    }
+    .theme-btn { 
+      width:50px;height:50px;border-radius:50%;cursor:pointer;
+      border:3px solid transparent;transition:all 0.3s ease;
+      box-shadow:0 4px 12px var(--shadow);
+    }
+    .theme-btn:hover { transform:scale(1.1);border-color:#fff; }
+    .theme-btn.active { border-color:#fff;box-shadow:0 0 20px rgba(255,255,255,0.5); }
+    .theme-gradient { background:linear-gradient(135deg,#667eea,#764ba2); }
+    .theme-dark { background:linear-gradient(135deg,#0f0c29,#302b63); }
+    .theme-cosmic { background:linear-gradient(135deg,#232526,#414345); }
+    .theme-ocean { background:linear-gradient(135deg,#2e3192,#1bffff); }
+    
+    .favorites { 
+      margin:25px 0;animation:fadeIn 0.6s ease 0.8s both;
+    }
+    .favorites-title { 
+      font-size:1.3em;font-weight:700;margin-bottom:15px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .favorite-item { 
+      background:var(--card-bg);backdrop-filter:blur(10px);
+      padding:15px;border-radius:12px;margin:10px 0;
+      display:flex;justify-content:space-between;align-items:center;
+      box-shadow:0 4px 16px var(--shadow);transition:all 0.3s ease;
+    }
+    .favorite-item:hover { transform:translateX(5px); }
+    .delete-btn { 
+      background:rgba(255,0,0,0.2);border:none;color:#ff4444;
+      padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;
+    }
+    
+    .timer { 
+      font-size:3em;font-weight:800;text-align:center;margin:20px 0;
+      color:var(--accent);text-shadow:0 0 20px var(--glow);
+      font-variant-numeric:tabular-nums;
+    }
+    
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+    
+    #confetti { position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999; }
+    
+    .leaderboard { 
+      background:var(--card-bg);backdrop-filter:blur(20px);
+      padding:20px;border-radius:16px;margin:20px 0;
+      box-shadow:0 8px 32px var(--shadow);
+    }
+    .leaderboard-title { font-size:1.5em;font-weight:700;margin-bottom:15px;text-align:center; }
+    .leaderboard-item { 
+      display:flex;justify-content:space-between;padding:12px;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .leaderboard-rank { font-weight:700;color:var(--gold);font-size:1.2em; }
+    
+    .modal { 
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.8);z-index:2000;align-items:center;justify-content:center;
+    }
+    .modal.show { display:flex; }
+    .modal-content { 
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      padding:30px;border-radius:24px;max-width:400px;width:90%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:slideDown 0.4s ease;
+    }
+    .modal-close { 
+      background:rgba(255,255,255,0.2);border:none;color:#fff;
+      padding:10px 20px;border-radius:12px;cursor:pointer;margin-top:20px;
+      width:100%;font-weight:700;font-size:1em;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+<div id="particles"></div>
+
+<div class="container">
+  <div class="header">
+    <span class="crown">👑</span>
+    <h1>DailyPrompt</h1>
+    <p style="opacity:0.9;margin:0;">Spark your creativity daily</p>
+  </div>
+  
+  <div class="stats">
+    <div class="stat-card">
+      <span class="stat-value" id="streakCount">0</span>
+      <span class="stat-label">🔥 Day Streak</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="totalPrompts">0</span>
+      <span class="stat-label">✨ Prompts</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="level">1</span>
+      <span class="stat-label">⭐ Level</span>
+    </div>
+  </div>
+  
+  <div class="categories">
+    <button class="category-btn active" data-category="all">All</button>
+    <button class="category-btn" data-category="creative">Creative</button>
+    <button class="category-btn" data-category="writing">Writing</button>
+    <button class="category-btn" data-category="art">Art</button>
+    <button class="category-btn" data-category="challenge">Challenge</button>
+    <button class="category-btn" data-category="funny">Funny</button>
+  </div>
+  
+  <div id="promptCard">
+    <div id="prompt">Tap "Get Inspired!" to receive your creative prompt ✨</div>
+    <span class="prompt-category" id="promptCategory" style="display:none;">CREATIVE</span>
+  </div>
+  
+  <div class="btn-group">
+    <button class="btn btn-primary" id="surpriseBtn">🎲 Get Inspired!</button>
+    <button class="btn btn-secondary" id="favoriteBtn">⭐ Save to Favorites</button>
+    <button class="btn btn-secondary" id="shareBtn">📤 Share Prompt</button>
+    <button class="btn btn-secondary" id="challengeBtn">⚡ 60-Second Challenge</button>
+    <button class="btn btn-secondary" id="leaderboardBtn">🏆 View Leaderboard</button>
+  </div>
+  
+  <div class="theme-selector">
+    <div class="theme-btn theme-gradient active" data-theme="default"></div>
+    <div class="theme-btn theme-dark" data-theme="dark"></div>
+    <div class="theme-btn theme-cosmic" data-theme="cosmic"></div>
+    <div class="theme-btn theme-ocean" data-theme="ocean"></div>
+  </div>
+  
+  <div class="favorites">
+    <div class="favorites-title">💖 My Favorites</div>
+    <div id="favoritesList"></div>
+  </div>
+</div>
+
+<div class="achievement" id="achievement">
+  <span class="achievement-icon">🏆</span>
+  <span id="achievementText">Achievement Unlocked!</span>
+</div>
+
+<div class="modal" id="challengeModal">
+  <div class="modal-content">
+    <h2 style="text-align:center;margin-top:0;">⚡ 60-Second Challenge!</h2>
+    <p style="text-align:center;font-size:1.1em;" id="challengePrompt"></p>
+    <div class="timer" id="timer">60</div>
+    <button class="btn btn-primary" id="startChallenge">Start Challenge!</button>
+    <button class="modal-close" id="closeChallenge">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="leaderboardModal">
+  <div class="modal-content">
+    <div class="leaderboard">
+      <div class="leaderboard-title">🏆 Global Leaderboard</div>
+      <div id="leaderboardList"></div>
+    </div>
+    <button class="modal-close" id="closeLeaderboard">Close</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
 <script>
   // Particle effects
@@ -51,7 +353,7 @@
     ]
   };
   
-  // State management
+  // State management - uses window.storage if available, falls back to memory
   let state = {
     streak: 0,
     totalPrompts: 0,
@@ -71,7 +373,6 @@
   
   // Get user info from Farcaster context
   let currentUser = { fid: null, username: 'You', displayName: 'You' };
-  let userStorageKey = 'dailyprompt-state'; // Will be updated with FID
   
   async function initUser() {
     if (window.frame?.sdk?.context) {
@@ -83,13 +384,10 @@
             username: context.user.username || 'user',
             displayName: context.user.displayName || context.user.username || 'You'
           };
-          // Create unique storage key per user
-          userStorageKey = `dailyprompt-state-${currentUser.fid}`;
-          console.log('✅ User initialized:', currentUser);
-          console.log('📦 Storage key:', userStorageKey);
+          console.log('User initialized:', currentUser);
         }
       } catch (err) {
-        console.log('⚠️ Using default user (not in Farcaster)');
+        console.log('Using default user (not in Farcaster)');
       }
     }
   }
@@ -110,46 +408,26 @@
     challengePrompt: document.getElementById("challengePrompt")
   };
   
-  // Storage wrapper - now uses per-user keys
+  // Storage wrapper
   async function loadState() {
     if (!hasStorage) {
-      console.log('⚠️ Using in-memory storage (deploy to Farcaster for persistence)');
+      console.log('Using in-memory storage (deploy to Farcaster for persistence)');
       return;
     }
     
     try {
-      console.log('📖 Loading state from:', userStorageKey);
-      const saved = await window.storage.get(userStorageKey);
-      
+      const saved = await window.storage.get('dailyprompt-state');
       if (saved && saved.value) {
         const data = JSON.parse(saved.value);
-        // Merge saved data, keeping the structure intact
-        state = {
-          streak: data.streak || 0,
-          totalPrompts: data.totalPrompts || 0,
-          level: data.level || 1,
-          currentPrompt: data.currentPrompt || "",
-          currentCategory: data.currentCategory || "all",
-          favorites: data.favorites || [],
-          achievements: data.achievements || [],
-          lastDate: data.lastDate || null,
-          theme: data.theme || "default",
-          leaderboard: data.leaderboard || [],
-          lastBonus: data.lastBonus || null
-        };
-        console.log('✅ State loaded successfully:', state);
-      } else {
-        console.log('📝 No saved state found, using fresh state');
+        state = {...state, ...data};
       }
       
-      // Load global leaderboard (shared across all users)
       const lb = await window.storage.get('dailyprompt-leaderboard', true);
       if (lb && lb.value) {
         state.leaderboard = JSON.parse(lb.value);
-        console.log('🏆 Leaderboard loaded:', state.leaderboard.length, 'users');
       }
     } catch (err) {
-      console.error('❌ Load error:', err);
+      console.log('No saved state');
     }
   }
   
@@ -157,11 +435,9 @@
     if (!hasStorage) return;
     
     try {
-      console.log('💾 Saving state to:', userStorageKey);
-      await window.storage.set(userStorageKey, JSON.stringify(state));
-      console.log('✅ State saved successfully');
+      await window.storage.set('dailyprompt-state', JSON.stringify(state));
     } catch (err) {
-      console.error('❌ Save failed:', err);
+      console.error('Save failed:', err);
     }
   }
   
@@ -196,9 +472,8 @@
       
       await window.storage.set('dailyprompt-leaderboard', JSON.stringify(leaderboard), true);
       state.leaderboard = leaderboard;
-      console.log('🏆 Leaderboard updated');
     } catch (err) {
-      console.error('❌ Leaderboard update failed:', err);
+      console.error('Leaderboard update failed:', err);
     }
   }
   
@@ -352,18 +627,19 @@
     }
   });
   
-  document.getElementById('shareBtn').addEventListener('click', async () => {
-    const shareText = state.currentPrompt 
-      ? `"${state.currentPrompt}"\n\n✨ Get your daily prompt:` 
-      : '✨ Get inspired with creative prompts daily!';
-    
-    // Check if we're in Farcaster environment
-    if (window.frame?.sdk?.actions?.composeCast) {
-      try {
-        const result = await window.frame.sdk.actions.composeCast({
-          text: shareText,
-          embeds: ['https://farcaster.xyz/miniapps/vtK7pjPhFY8P/dailyprompt']
-        });
+ document.getElementById('shareBtn').addEventListener('click', async () => {
+  const shareText = state.currentPrompt 
+    ? `"${state.currentPrompt}"\n\n✨ Get your daily prompt:` 
+    : '✨ Get inspired with creative prompts daily!';
+  
+  // Check if we're in Farcaster environment
+  if (window.frame?.sdk?.actions?.composeCast) {
+    try {
+      const result = await window.frame.sdk.actions.composeCast({
+        text: shareText,
+        embeds: ['https://farcaster.xyz/miniapps/vtK7pjPhFY8P/dailyprompt']
+      });
+
         
         if (result?.cast) {
           showAchievement("Cast shared! 🎉");
@@ -400,7 +676,6 @@
       document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.currentCategory = btn.dataset.category;
-      saveState();
     });
   });
   
@@ -500,53 +775,47 @@
     }
   }
   
-  // Initialize - IMPORTANT: Wait for everything to load properly
-  async function init() {
-    try {
-      console.log('🚀 Initializing app...');
-      
-      // Step 1: Get user info
-      await initUser();
-      
-      // Step 2: Load their saved state
-      await loadState();
-      
-      // Step 3: Update UI with loaded state
-      updateUI();
-      
-      // Step 4: Apply saved theme
-      if (state.theme && state.theme !== 'default') {
-        document.body.className = state.theme;
-        document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-        const themeBtn = document.querySelector(`[data-theme="${state.theme}"]`);
-        if (themeBtn) themeBtn.classList.add('active');
+  // Initialize
+  initUser().then(() => {
+    return loadState();
+  }).then(() => {
+    updateUI();
+    if (state.theme !== 'default') {
+      document.body.className = state.theme;
+      const themeBtn = document.querySelector(`[data-theme="${state.theme}"]`);
+      if (themeBtn) {
+        document.querySelector('[data-theme="default"]').classList.remove('active');
+        themeBtn.classList.add('active');
       }
-      
-      // Step 5: Apply saved category
-      if (state.currentCategory) {
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        const catBtn = document.querySelector(`[data-category="${state.currentCategory}"]`);
-        if (catBtn) catBtn.classList.add('active');
+    }
+    checkDailyBonus();
+  });
+  
+  setInterval(saveState, 30000);
+</script>
+
+<!-- Farcaster SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+<script>
+  function initSDK() {
+    if (window.frame?.sdk?.actions?.ready) {
+      try {
+        window.frame.sdk.actions.ready();
+        console.log("✅ Farcaster SDK ready");
+      } catch (err) {
+        console.error("❌ SDK error:", err);
       }
-      
-      // Step 6: Show last prompt if exists
-      if (state.currentPrompt) {
-        el.prompt.textContent = state.currentPrompt;
-        el.category.textContent = state.currentCategory.toUpperCase();
-        el.category.style.display = 'inline-block';
-      }
-      
-      checkDailyBonus();
-      console.log('✅ App initialized successfully!');
-      console.log('📊 Current state:', state);
-    } catch (err) {
-      console.error('❌ Initialization error:', err);
+    } else {
+      setTimeout(initSDK, 100);
     }
   }
   
-  // Run initialization
-  init();
-  
-  // Auto-save every 30 seconds
-  setInterval(saveState, 30000);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSDK);
+  } else {
+    initSDK();
+  }
 </script>
+
+</body>
+</html>

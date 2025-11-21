@@ -627,18 +627,19 @@
     }
   });
   
-  document.getElementById('shareBtn').addEventListener('click', async () => {
-    const shareText = state.currentPrompt 
-      ? `✨ My DailyPrompt: "${state.currentPrompt}"\n\nGet your creative prompt at:` 
-      : '✨ Get inspired with creative prompts daily!';
-    
-    // Check if we're in Farcaster environment
-    if (window.frame?.sdk?.actions?.composeCast) {
-      try {
-        const result = await window.frame.sdk.actions.composeCast({
-          text: shareText,
-          embeds: [window.location.origin]
-        });
+ document.getElementById('shareBtn').addEventListener('click', async () => {
+  const shareText = state.currentPrompt 
+    ? `"${state.currentPrompt}"\n\n✨ Get your daily prompt:` 
+    : '✨ Get inspired with creative prompts daily!';
+  
+  // Check if we're in Farcaster environment
+  if (window.frame?.sdk?.actions?.composeCast) {
+    try {
+      const result = await window.frame.sdk.actions.composeCast({
+        text: shareText,
+        embeds: ['https://farcaster.xyz/miniapps/vtK7pjPhFY8P/dailyprompt']
+      });
+
         
         if (result?.cast) {
           showAchievement("Cast shared! 🎉");
@@ -818,3 +819,4 @@
 
 </body>
 </html>
+

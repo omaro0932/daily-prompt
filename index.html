@@ -603,17 +603,42 @@
     }
   });
   
-  document.getElementById('shareBtn').addEventListener('click', () => {
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    const shareText = state.currentPrompt 
+      ? `✨ My DailyPrompt: "${state.currentPrompt}"\n\nGet your creative prompt at:` 
+      : '✨ Get inspired with creative prompts daily!';
+    
+    // Check if we're in Farcaster environment
+    if (window.frame?.sdk?.actions?.composeCast) {
+      try {
+        const result = await window.frame.sdk.actions.composeCast({
+          text: shareText,
+          embeds: [window.location.origin]
+        });
+        
+        if (result?.cast) {
+          showAchievement("Cast shared! 🎉");
+        }
+      } catch (err) {
+        console.error('Cast error:', err);
+        fallbackShare(shareText);
+      }
+    } else {
+      fallbackShare(shareText);
+    }
+  });
+  
+  function fallbackShare(text) {
     if (navigator.share) {
       navigator.share({
         title: 'DailyPrompt',
-        text: state.currentPrompt || 'Check out DailyPrompt for creative inspiration!'
+        text: text
       });
     } else {
-      navigator.clipboard.writeText(state.currentPrompt);
+      navigator.clipboard.writeText(text);
       showAchievement("Copied to clipboard! 📋");
     }
-  });
+  }
   
   window.deleteFavorite = (index) => {
     state.favorites.splice(index, 1);

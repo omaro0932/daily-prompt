@@ -59,10 +59,13 @@
       promptEl.style.opacity=1;
     },200);
     updateStreak();
-document.getElementById("shareBtn").onclick = () => {
-  window.location.href = `/api/share?text=${encodeURIComponent(promptEl.innerText)}`;
-};
-
+  };
+  
+  document.getElementById("shareBtn").onclick=()=>{
+    navigator.clipboard.writeText(promptEl.innerText);
+    alert("Prompt copied!");
+  };
+  
   const themeBtn=document.getElementById("themeBtn");
   themeBtn.onclick=()=>{
     document.body.classList.toggle("dark");
@@ -97,4 +100,3 @@ document.getElementById("shareBtn").onclick = () => {
 
 </body>
 </html>
-

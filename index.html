@@ -63,12 +63,12 @@
     
     
   };
-  
- document.getElementById("shareBtn").onclick = () => {
-  window.location.href = `/api/share?text=${encodeURIComponent(promptEl.innerText)}`;
+document.getElementById("shareBtn").onclick=()=>{
+  navigator.clipboard.writeText(promptEl.innerText);
+  alert("Prompt copied!");
+};
 
 
-  };
 
 
   

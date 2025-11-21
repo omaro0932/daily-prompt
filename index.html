@@ -3,107 +3,731 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DailyPrompt</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>DailyPrompt - Get Inspired</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { --bg1:#6c5ce7;--bg2:#a29bfe;--text:#fff;--card-bg:rgba(255,255,255,0.15);--accent:#fd79a8;--secondary:#ffeaa7;--shadow:rgba(0,0,0,0.25);}
-    body.dark { --bg1:#1e1f26;--bg2:#2d3038;--text:#fff;--card-bg:rgba(255,255,255,0.07);--accent:#ff6b81;--secondary:#dfe6e9;--shadow:rgba(0,0,0,0.5);}
-    body { margin:0;font-family:'Inter',sans-serif;background:linear-gradient(145deg,var(--bg1),var(--bg2));color:var(--text);display:flex;flex-direction:column;align-items:center;padding:25px;min-height:100vh;text-align:center;transition:background 0.4s ease;}
-    h1 { font-size:2.7em;margin:15px 0 10px 0;font-weight:700;text-shadow:0 3px 10px var(--shadow);}
-    #prompt { background:var(--card-bg);backdrop-filter:blur(10px);margin-top:20px;padding:22px;border-radius:18px;width:90%;max-width:400px;min-height:110px;display:flex;align-items:center;justify-content:center;font-size:1.3em;line-height:1.4em;box-shadow:0 6px 20px var(--shadow);animation:fadeIn 0.4s ease;}
-    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
-    .btn { margin-top:15px;width:90%;max-width:350px;padding:15px;border:none;border-radius:14px;font-size:1.1em;font-weight:600;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 4px 12px var(--shadow);transition:transform 0.2s, box-shadow 0.2s;}
-    .btn:hover { transform:translateY(-3px);box-shadow:0 6px 16px var(--shadow);}
-    #streak { margin-top:20px;font-size:1.2em;font-weight:600;text-shadow:0 2px 8px var(--shadow);}
-    #particles { position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;}
+    * { box-sizing: border-box; }
+    :root { 
+      --bg1:#667eea;--bg2:#764ba2;--text:#fff;--card-bg:rgba(255,255,255,0.12);
+      --accent:#f093fb;--secondary:#4facfe;--success:#00f2c3;--gold:#ffd700;
+      --shadow:rgba(0,0,0,0.3);--glow:rgba(240,147,251,0.4);
+    }
+    body.dark { 
+      --bg1:#0f0c29;--bg2:#302b63;--text:#fff;--card-bg:rgba(255,255,255,0.08);
+      --accent:#ff6bcb;--secondary:#4facfe;--shadow:rgba(0,0,0,0.6);
+    }
+    body.cosmic { 
+      --bg1:#232526;--bg2:#414345;--text:#fff;--card-bg:rgba(255,255,255,0.1);
+      --accent:#f857a6;--secondary:#ff5858;
+    }
+    body.ocean { 
+      --bg1:#2e3192;--bg2:#1bffff;--text:#fff;--card-bg:rgba(255,255,255,0.15);
+      --accent:#00d4ff;--secondary:#7b2cbf;
+    }
+    body { 
+      margin:0;font-family:'Inter',sans-serif;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--text);min-height:100vh;overflow-x:hidden;
+      transition:background 0.6s ease;position:relative;
+    }
+    #particles { position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+    .container { position:relative;z-index:1;max-width:500px;margin:0 auto;padding:20px; }
+    
+    /* Header with animated crown */
+    .header { text-align:center;margin-bottom:20px;position:relative; }
+    h1 { 
+      font-size:2.8em;margin:10px 0;font-weight:800;
+      background:linear-gradient(45deg,var(--accent),var(--secondary));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background-clip:text;animation:slideDown 0.5s ease;
+      text-shadow:0 0 30px var(--glow);
+    }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-30px);} to{opacity:1;transform:translateY(0);} }
+    
+    .crown { font-size:2em;display:inline-block;animation:bounce 2s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+    
+    /* Stats bar */
+    .stats { 
+      display:flex;justify-content:space-around;margin:20px 0;gap:10px;
+      animation:fadeIn 0.6s ease 0.2s both;
+    }
+    .stat-card { 
+      background:var(--card-bg);backdrop-filter:blur(15px);
+      padding:15px;border-radius:16px;flex:1;text-align:center;
+      box-shadow:0 8px 32px var(--shadow);border:1px solid rgba(255,255,255,0.1);
+      transition:transform 0.3s ease;
+    }
+    .stat-card:hover { transform:translateY(-5px) scale(1.05); }
+    .stat-value { font-size:2em;font-weight:700;color:var(--accent);display:block; }
+    .stat-label { font-size:0.85em;opacity:0.9;margin-top:5px; }
+    
+    /* Main prompt card with glow effect */
+    #promptCard { 
+      background:var(--card-bg);backdrop-filter:blur(20px);
+      padding:30px;border-radius:24px;min-height:180px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      box-shadow:0 12px 48px var(--shadow), 0 0 0 1px rgba(255,255,255,0.1);
+      margin:20px 0;position:relative;overflow:hidden;
+      animation:fadeIn 0.6s ease 0.3s both;
+      transition:all 0.4s ease;
+    }
+    #promptCard:hover { box-shadow:0 16px 64px var(--shadow), 0 0 40px var(--glow); }
+    #promptCard::before {
+      content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+      background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);
+      animation:rotate 8s linear infinite;pointer-events:none;
+    }
+    @keyframes rotate { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+    
+    #prompt { 
+      font-size:1.35em;line-height:1.5em;text-align:center;z-index:1;
+      font-weight:600;letter-spacing:0.3px;
+    }
+    .prompt-category { 
+      display:inline-block;padding:6px 14px;background:var(--accent);
+      border-radius:20px;font-size:0.75em;margin-top:15px;font-weight:600;
+      text-transform:uppercase;letter-spacing:1px;
+    }
+    
+    /* Buttons with better animations */
+    .btn-group { display:flex;flex-direction:column;gap:12px;margin:20px 0; }
+    .btn { 
+      width:100%;padding:16px;border:none;border-radius:16px;
+      font-size:1.05em;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 20px var(--shadow);
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      position:relative;overflow:hidden;letter-spacing:0.5px;
+    }
+    .btn::before {
+      content:'';position:absolute;top:50%;left:50%;width:0;height:0;
+      border-radius:50%;background:rgba(255,255,255,0.3);
+      transform:translate(-50%,-50%);transition:width 0.6s,height 0.6s;
+    }
+    .btn:active::before { width:300px;height:300px; }
+    .btn-primary { 
+      background:linear-gradient(135deg,var(--accent),var(--secondary));
+      color:#fff;animation:fadeIn 0.6s ease 0.4s both;
+    }
+    .btn-primary:hover { transform:translateY(-3px) scale(1.02);box-shadow:0 12px 32px var(--glow); }
+    .btn-secondary { 
+      background:var(--card-bg);backdrop-filter:blur(10px);color:var(--text);
+      border:2px solid rgba(255,255,255,0.2);animation:fadeIn 0.6s ease 0.5s both;
+    }
+    .btn-secondary:hover { transform:translateY(-2px);border-color:var(--accent); }
+    
+    /* Category selector */
+    .categories { 
+      display:flex;gap:8px;flex-wrap:wrap;margin:20px 0;
+      animation:fadeIn 0.6s ease 0.6s both;
+    }
+    .category-btn { 
+      padding:10px 16px;border-radius:20px;border:2px solid rgba(255,255,255,0.2);
+      background:var(--card-bg);backdrop-filter:blur(10px);color:var(--text);
+      font-size:0.9em;cursor:pointer;transition:all 0.3s ease;font-weight:600;
+    }
+    .category-btn:hover { border-color:var(--accent);transform:scale(1.05); }
+    .category-btn.active { 
+      background:linear-gradient(135deg,var(--accent),var(--secondary));
+      border-color:transparent;box-shadow:0 4px 12px var(--glow);
+    }
+    
+    /* Achievement popup */
+    .achievement { 
+      position:fixed;top:-100px;left:50%;transform:translateX(-50%);
+      background:linear-gradient(135deg,var(--gold),#ffa500);
+      color:#000;padding:20px 30px;border-radius:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,0.5);z-index:1000;
+      font-weight:700;font-size:1.1em;transition:top 0.5s ease;
+      display:flex;align-items:center;gap:12px;
+    }
+    .achievement.show { top:20px; }
+    .achievement-icon { font-size:2em;animation:rotate 1s ease; }
+    
+    /* Theme selector */
+    .theme-selector { 
+      display:flex;gap:10px;justify-content:center;margin:20px 0;
+      animation:fadeIn 0.6s ease 0.7s both;
+    }
+    .theme-btn { 
+      width:50px;height:50px;border-radius:50%;cursor:pointer;
+      border:3px solid transparent;transition:all 0.3s ease;
+      box-shadow:0 4px 12px var(--shadow);
+    }
+    .theme-btn:hover { transform:scale(1.1);border-color:#fff; }
+    .theme-btn.active { border-color:#fff;box-shadow:0 0 20px rgba(255,255,255,0.5); }
+    .theme-gradient { background:linear-gradient(135deg,#667eea,#764ba2); }
+    .theme-dark { background:linear-gradient(135deg,#0f0c29,#302b63); }
+    .theme-cosmic { background:linear-gradient(135deg,#232526,#414345); }
+    .theme-ocean { background:linear-gradient(135deg,#2e3192,#1bffff); }
+    
+    /* Favorites section */
+    .favorites { 
+      margin:25px 0;animation:fadeIn 0.6s ease 0.8s both;
+    }
+    .favorites-title { 
+      font-size:1.3em;font-weight:700;margin-bottom:15px;
+      display:flex;align-items:center;gap:8px;
+    }
+    .favorite-item { 
+      background:var(--card-bg);backdrop-filter:blur(10px);
+      padding:15px;border-radius:12px;margin:10px 0;
+      display:flex;justify-content:space-between;align-items:center;
+      box-shadow:0 4px 16px var(--shadow);transition:all 0.3s ease;
+    }
+    .favorite-item:hover { transform:translateX(5px); }
+    .delete-btn { 
+      background:rgba(255,0,0,0.2);border:none;color:#ff4444;
+      padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;
+    }
+    
+    /* Timer and challenge mode */
+    .timer { 
+      font-size:3em;font-weight:800;text-align:center;margin:20px 0;
+      color:var(--accent);text-shadow:0 0 20px var(--glow);
+      font-variant-numeric:tabular-nums;
+    }
+    .challenge-mode { 
+      background:linear-gradient(135deg,#ff6b6b,#ee5a6f);
+      padding:20px;border-radius:16px;margin:20px 0;text-align:center;
+      box-shadow:0 8px 32px rgba(0,0,0,0.4);
+    }
+    
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+    
+    /* Confetti canvas */
+    #confetti { position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999; }
+    
+    /* Leaderboard */
+    .leaderboard { 
+      background:var(--card-bg);backdrop-filter:blur(20px);
+      padding:20px;border-radius:16px;margin:20px 0;
+      box-shadow:0 8px 32px var(--shadow);
+    }
+    .leaderboard-title { font-size:1.5em;font-weight:700;margin-bottom:15px;text-align:center; }
+    .leaderboard-item { 
+      display:flex;justify-content:space-between;padding:12px;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .leaderboard-rank { font-weight:700;color:var(--gold);font-size:1.2em; }
+    
+    /* Modal */
+    .modal { 
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.8);z-index:2000;align-items:center;justify-content:center;
+    }
+    .modal.show { display:flex; }
+    .modal-content { 
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      padding:30px;border-radius:24px;max-width:400px;width:90%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:slideDown 0.4s ease;
+    }
+    .modal-close { 
+      background:rgba(255,255,255,0.2);border:none;color:#fff;
+      padding:10px 20px;border-radius:12px;cursor:pointer;margin-top:20px;
+      width:100%;font-weight:700;font-size:1em;
+    }
   </style>
 </head>
 <body>
 
+<canvas id="confetti"></canvas>
 <div id="particles"></div>
-<h1>DailyPrompt</h1>
-<div id="prompt">Tap "Surprise Me!" to receive your creative prompt</div>
-<button id="surpriseBtn" class="btn">🎲 Surprise Me!</button>
-<button id="shareBtn" class="btn">📤 Share Prompt</button>
-<button id="themeBtn" class="btn">🌗 Toggle Theme</button>
-<div id="streak">Your streak: 0 days</div>
+
+<div class="container">
+  <div class="header">
+    <span class="crown">👑</span>
+    <h1>DailyPrompt</h1>
+    <p style="opacity:0.9;margin:0;">Spark your creativity daily</p>
+  </div>
+  
+  <div class="stats">
+    <div class="stat-card">
+      <span class="stat-value" id="streakCount">0</span>
+      <span class="stat-label">🔥 Day Streak</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="totalPrompts">0</span>
+      <span class="stat-label">✨ Prompts</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="level">1</span>
+      <span class="stat-label">⭐ Level</span>
+    </div>
+  </div>
+  
+  <div class="categories">
+    <button class="category-btn active" data-category="all">All</button>
+    <button class="category-btn" data-category="creative">Creative</button>
+    <button class="category-btn" data-category="writing">Writing</button>
+    <button class="category-btn" data-category="art">Art</button>
+    <button class="category-btn" data-category="challenge">Challenge</button>
+    <button class="category-btn" data-category="funny">Funny</button>
+  </div>
+  
+  <div id="promptCard">
+    <div id="prompt">Tap "Get Inspired!" to receive your creative prompt ✨</div>
+    <span class="prompt-category" id="promptCategory" style="display:none;">CREATIVE</span>
+  </div>
+  
+  <div class="btn-group">
+    <button class="btn btn-primary" id="surpriseBtn">🎲 Get Inspired!</button>
+    <button class="btn btn-secondary" id="favoriteBtn">⭐ Save to Favorites</button>
+    <button class="btn btn-secondary" id="shareBtn">📤 Share Prompt</button>
+    <button class="btn btn-secondary" id="challengeBtn">⚡ 60-Second Challenge</button>
+    <button class="btn btn-secondary" id="leaderboardBtn">🏆 View Leaderboard</button>
+  </div>
+  
+  <div class="theme-selector">
+    <div class="theme-btn theme-gradient active" data-theme="default"></div>
+    <div class="theme-btn theme-dark" data-theme="dark"></div>
+    <div class="theme-btn theme-cosmic" data-theme="cosmic"></div>
+    <div class="theme-btn theme-ocean" data-theme="ocean"></div>
+  </div>
+  
+  <div class="favorites">
+    <div class="favorites-title">💖 My Favorites</div>
+    <div id="favoritesList"></div>
+  </div>
+</div>
+
+<div class="achievement" id="achievement">
+  <span class="achievement-icon">🏆</span>
+  <span id="achievementText">Achievement Unlocked!</span>
+</div>
+
+<div class="modal" id="challengeModal">
+  <div class="modal-content">
+    <h2 style="text-align:center;margin-top:0;">⚡ 60-Second Challenge!</h2>
+    <p style="text-align:center;font-size:1.1em;" id="challengePrompt"></p>
+    <div class="timer" id="timer">60</div>
+    <button class="btn btn-primary" id="startChallenge">Start Challenge!</button>
+    <button class="modal-close" id="closeChallenge">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="leaderboardModal">
+  <div class="modal-content">
+    <div class="leaderboard">
+      <div class="leaderboard-title">🏆 Global Leaderboard</div>
+      <div id="leaderboardList"></div>
+    </div>
+    <button class="modal-close" id="closeLeaderboard">Close</button>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
 <script>
-  tsParticles.load("particles",{particles:{number:{value:45},size:{value:3},move:{speed:1},links:{enable:true,distance:130},color:{value:["#fd79a8","#6C5CE7","#FFEAA7"]}}});
-  
-  const prompts=["Write a story in one sentence.","Describe your day using only emojis.","Invent a new holiday and explain it.","Write a haiku about your mood.","Create a motivational quote.","Describe a scene from a movie that doesn't exist.","Explain a random fact you love.","Write a 3-word horror story.","Describe a color without naming it.","Invent a new superpower."];
-  const promptEl=document.getElementById("prompt");
-  const streakEl=document.getElementById("streak");
-  
-  // Use in-memory storage instead of localStorage (not supported in Farcaster frames)
-  let streak = 0;
-  let lastDate = null;
-  
-  function updateStreak(){
-    const today=new Date().toISOString().slice(0,10);
-    if(lastDate!==today){
-      streak++;
-      lastDate=today;
+  // Particle effects
+  tsParticles.load("particles",{
+    particles:{
+      number:{value:60},
+      size:{value:3,random:true},
+      move:{speed:1.5,direction:"none",random:true,outModes:"out"},
+      links:{enable:true,distance:150,opacity:0.3},
+      color:{value:["#f093fb","#4facfe","#00f2c3"]},
+      opacity:{value:0.6,random:true}
     }
-    streakEl.innerText=`Your streak: ${streak} days`;
-  }
+  });
   
-  updateStreak();
-  
-  document.getElementById("surpriseBtn").onclick=()=>{
-    const random=prompts[Math.floor(Math.random()*prompts.length)];
-    promptEl.style.opacity=0;
-    setTimeout(()=>{
-      promptEl.innerText=random;
-      promptEl.style.opacity=1;
-    },200);
-    updateStreak();
-
-    
-    
+  // Enhanced prompts with categories
+  const prompts = {
+    creative: [
+      "Design a new emoji that represents 2025",
+      "Invent a new sport that combines two existing ones",
+      "Create a superhero whose power is based on your favorite food",
+      "Design your dream treehouse in 5 words",
+      "Invent a holiday celebration for introverts"
+    ],
+    writing: [
+      "Write a story that ends with: 'And that's why I never trust mirrors'",
+      "Describe your morning routine as an epic adventure",
+      "Write a love letter from your future self",
+      "Create a haiku about your wifi connection",
+      "Write the opening line of a bestselling novel"
+    ],
+    art: [
+      "Draw your mood using only geometric shapes",
+      "Create a logo for a company that sells bottled dreams",
+      "Design a tattoo that tells your life story",
+      "Sketch an alien's interpretation of human fashion",
+      "Illustrate a sound using only colors"
+    ],
+    challenge: [
+      "Explain quantum physics using only food metaphors",
+      "Pitch a movie idea in exactly 7 words",
+      "Create a recipe for happiness (literal ingredients)",
+      "Write a breakup letter to your phone",
+      "Describe a color to someone who's never seen"
+    ],
+    funny: [
+      "Write Yelp review for Earth from an alien tourist",
+      "Create dating profile bio for a houseplant",
+      "Write warning label for being an adult",
+      "Pitch worst product idea that could actually sell",
+      "Explain your job to a time traveler from 1823"
+    ]
   };
-document.getElementById("shareBtn").onclick=()=>{
-  navigator.clipboard.writeText(promptEl.innerText);
-  alert("Prompt copied!");
-};
-
-
-
-
   
-  const themeBtn=document.getElementById("themeBtn");
-  themeBtn.onclick=()=>{
-    document.body.classList.toggle("dark");
+  // State management
+  let state = {
+    streak: 0,
+    totalPrompts: 0,
+    level: 1,
+    currentPrompt: "",
+    currentCategory: "all",
+    favorites: [],
+    achievements: [],
+    lastDate: null,
+    theme: "default",
+    challengeTime: 60,
+    leaderboard: []
   };
-</script>
-
-<!-- Farcaster SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
-<script>
-  // Wait for SDK to be fully loaded
-  function initSDK() {
-    if (window.frame?.sdk?.actions?.ready) {
-      try {
-        window.frame.sdk.actions.ready();
-        console.log("✅ SDK ready called - splash screen should hide");
-      } catch (err) {
-        console.error("❌ Error calling sdk.actions.ready():", err);
+  
+  // DOM elements
+  const el = {
+    prompt: document.getElementById("prompt"),
+    category: document.getElementById("promptCategory"),
+    streakCount: document.getElementById("streakCount"),
+    totalPrompts: document.getElementById("totalPrompts"),
+    level: document.getElementById("level"),
+    favoritesList: document.getElementById("favoritesList"),
+    achievement: document.getElementById("achievement"),
+    achievementText: document.getElementById("achievementText"),
+    challengeModal: document.getElementById("challengeModal"),
+    leaderboardModal: document.getElementById("leaderboardModal"),
+    timer: document.getElementById("timer"),
+    challengePrompt: document.getElementById("challengePrompt")
+  };
+  
+  // Initialize from storage
+  async function initStorage() {
+    try {
+      const saved = await window.storage.get('dailyprompt-state');
+      if (saved && saved.value) {
+        const data = JSON.parse(saved.value);
+        state = {...state, ...data};
+        updateUI();
       }
-    } else {
-      console.log("⏳ SDK not ready yet, retrying...");
-      setTimeout(initSDK, 100);
+      
+      // Load leaderboard
+      const lb = await window.storage.get('dailyprompt-leaderboard', true);
+      if (lb && lb.value) {
+        state.leaderboard = JSON.parse(lb.value);
+      }
+    } catch (err) {
+      console.log('No saved state, starting fresh');
     }
   }
-
-  // Start trying to initialize once DOM is loaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSDK);
-  } else {
-    initSDK();
+  
+  // Save to storage
+  async function saveState() {
+    try {
+      await window.storage.set('dailyprompt-state', JSON.stringify(state));
+    } catch (err) {
+      console.error('Save failed:', err);
+    }
   }
-</script>
-
-</body>
-</html>
-
+  
+  // Update leaderboard
+  async function updateLeaderboard() {
+    try {
+      const lb = await window.storage.get('dailyprompt-leaderboard', true);
+      let leaderboard = lb && lb.value ? JSON.parse(lb.value) : [];
+      
+      // Add/update current user
+      const userIndex = leaderboard.findIndex(u => u.id === 'user');
+      const userData = {
+        id: 'user',
+        name: 'You',
+        streak: state.streak,
+        prompts: state.totalPrompts,
+        level: state.level,
+        score: state.streak * 10 + state.totalPrompts * 5
+      };
+      
+      if (userIndex >= 0) {
+        leaderboard[userIndex] = userData;
+      } else {
+        leaderboard.push(userData);
+      }
+      
+      // Sort by score
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 10);
+      
+      await window.storage.set('dailyprompt-leaderboard', JSON.stringify(leaderboard), true);
+      state.leaderboard = leaderboard;
+    } catch (err) {
+      console.error('Leaderboard update failed:', err);
+    }
+  }
+  
+  // Update UI
+  function updateUI() {
+    el.streakCount.textContent = state.streak;
+    el.totalPrompts.textContent = state.totalPrompts;
+    el.level.textContent = state.level;
+    
+    // Update favorites
+    el.favoritesList.innerHTML = state.favorites.length === 0 
+      ? '<p style="text-align:center;opacity:0.6;">No favorites yet</p>'
+      : state.favorites.map((fav, i) => `
+          <div class="favorite-item">
+            <span>${fav}</span>
+            <button class="delete-btn" onclick="deleteFavorite(${i})">✕</button>
+          </div>
+        `).join('');
+  }
+  
+  // Get random prompt
+  function getRandomPrompt(category) {
+    let pool = [];
+    if (category === 'all') {
+      pool = Object.values(prompts).flat();
+    } else {
+      pool = prompts[category] || [];
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  
+  // Update streak
+  function updateStreak() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (state.lastDate !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      if (state.lastDate === yesterday) {
+        state.streak++;
+        checkAchievements('streak', state.streak);
+      } else if (state.lastDate !== null) {
+        state.streak = 1;
+      } else {
+        state.streak = 1;
+      }
+      state.lastDate = today;
+    }
+  }
+  
+  // Check achievements
+  function checkAchievements(type, value) {
+    const achievements = {
+      streak: [
+        { at: 3, msg: "3 Day Streak! You're on fire! 🔥" },
+        { at: 7, msg: "Week Warrior! 7 days strong! 💪" },
+        { at: 30, msg: "Monthly Master! 30 days! 🏆" }
+      ],
+      prompts: [
+        { at: 10, msg: "10 Prompts! Getting creative! ✨" },
+        { at: 50, msg: "50 Prompts! Inspiration machine! 🎨" },
+        { at: 100, msg: "Century Club! 100 prompts! 👑" }
+      ],
+      level: [
+        { at: 5, msg: "Level 5! Rising star! ⭐" },
+        { at: 10, msg: "Level 10! Creative genius! 🌟" }
+      ]
+    };
+    
+    const checks = achievements[type] || [];
+    checks.forEach(ach => {
+      const key = `${type}_${ach.at}`;
+      if (value === ach.at && !state.achievements.includes(key)) {
+        state.achievements.push(key);
+        showAchievement(ach.msg);
+        launchConfetti();
+      }
+    });
+  }
+  
+  // Show achievement
+  function showAchievement(msg) {
+    el.achievementText.textContent = msg;
+    el.achievement.classList.add('show');
+    setTimeout(() => el.achievement.classList.remove('show'), 3000);
+  }
+  
+  // Confetti effect
+  function launchConfetti() {
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const pieces = [];
+    const colors = ['#f093fb', '#4facfe', '#00f2c3', '#ffd700', '#ff6bcb'];
+    
+    for (let i = 0; i < 100; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        rotation: Math.random() * 360,
+        speed: 2 + Math.random() * 3,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      });
+    }
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach((p, i) => {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation * Math.PI / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-5, -5, 10, 10);
+        ctx.restore();
+        
+        p.y += p.speed;
+        p.rotation += 5;
+        
+        if (p.y > canvas.height) pieces.splice(i, 1);
+      });
+      
+      if (pieces.length > 0) requestAnimationFrame(animate);
+    }
+    animate();
+  }
+  
+  // Event listeners
+  document.getElementById('surpriseBtn').onclick = () => {
+    const prompt = getRandomPrompt(state.currentCategory);
+    state.currentPrompt = prompt;
+    
+    el.prompt.style.opacity = 0;
+    el.category.style.display = 'none';
+    
+    setTimeout(() => {
+      el.prompt.textContent = prompt;
+      el.category.textContent = state.currentCategory.toUpperCase();
+      el.category.style.display = 'inline-block';
+      el.prompt.style.opacity = 1;
+      
+      updateStreak();
+      state.totalPrompts++;
+      state.level = Math.floor(state.totalPrompts / 10) + 1;
+      checkAchievements('prompts', state.totalPrompts);
+      checkAchievements('level', state.level);
+      updateUI();
+      saveState();
+      updateLeaderboard();
+    }, 200);
+  };
+  
+  document.getElementById('favoriteBtn').onclick = () => {
+    if (state.currentPrompt && !state.favorites.includes(state.currentPrompt)) {
+      state.favorites.push(state.currentPrompt);
+      updateUI();
+      saveState();
+      showAchievement("Added to favorites! 💖");
+    }
+  };
+  
+  document.getElementById('shareBtn').onclick = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'DailyPrompt',
+        text: state.currentPrompt || 'Check out DailyPrompt for creative inspiration!'
+      });
+    } else {
+      navigator.clipboard.writeText(state.currentPrompt);
+      showAchievement("Copied to clipboard! 📋");
+    }
+  };
+  
+  window.deleteFavorite = (index) => {
+    state.favorites.splice(index, 1);
+    updateUI();
+    saveState();
+  };
+  
+  // Category buttons
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.currentCategory = btn.dataset.category;
+    };
+  });
+  
+  // Theme buttons
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const theme = btn.dataset.theme;
+      document.body.className = theme === 'default' ? '' : theme;
+      state.theme = theme;
+      saveState();
+    };
+  });
+  
+  // Challenge mode
+  let challengeInterval;
+  document.getElementById('challengeBtn').onclick = () => {
+    const prompt = getRandomPrompt('challenge');
+    el.challengePrompt.textContent = prompt;
+    el.timer.textContent = '60';
+    el.challengeModal.classList.add('show');
+  };
+  
+  document.getElementById('startChallenge').onclick = () => {
+    let time = 60;
+    document.getElementById('startChallenge').disabled = true;
+    
+    challengeInterval = setInterval(() => {
+      time--;
+      el.timer.textContent = time;
+      
+      if (time <= 0) {
+        clearInterval(challengeInterval);
+        showAchievement("Challenge complete! You're amazing! 🎉");
+        launchConfetti();
+        el.challengeModal.classList.remove('show');
+        document.getElementById('startChallenge').disabled = false;
+        state.totalPrompts++;
+        updateUI();
+        saveState();
+        updateLeaderboard();
+      }
+    }, 1000);
+  };
+  
+  document.getElementById('closeChallenge').onclick = () => {
+    clearInterval(challengeInterval);
+    el.challengeModal.classList.remove('show');
+    document.getElementById('startChallenge').disabled = false;
+  };
+  
+  // Leaderboard
+  document.getElementById('leaderboardBtn').onclick = async () => {
+    await updateLeaderboard();
+    
+    const leaderboardHTML = state.leaderboard.map((user, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+      return `
+        <div class="leaderboard-item">
+          <span><span class="leaderboard-rank">${medal}</span> ${user.name}</span>
+          <span style="font-weight:700;">${user.score} pts</span>
+        </div>
+      `;
+    }).join('');
+    
+    document.getElementById('leaderboardList').innerHTML = leaderboardHTML || '<p style="text-align:center;">Be the first on the leaderboard!</p>';
+    el.leaderboardModal.classList.add('show');
+  };
+  
+  document.getElementById('closeLeaderboard').onclick = () => {
+    el.leaderboardModal.classList.remove('show');
+  };
+  
+  // Initialize
+  initStorage().then(() => {
+    updateUI();
+    if (state.theme !== 'default') {
+      document.body.className = state.theme;
+      document.querySelector(`[data-theme="${state.theme}"]`).classList.add('active');
+      document.querySelector('[data-theme="default"]').classList.remove('active');
+    }
+  });
+  
+  // Auto-save every 30 seconds
+  setInterval(saveState, 30000);

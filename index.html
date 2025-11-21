@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DailyPrompt - Get Inspired</title>
+  <title>DailyPrompt</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -33,7 +33,6 @@
     #particles { position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
     .container { position:relative;z-index:1;max-width:500px;margin:0 auto;padding:20px; }
     
-    /* Header with animated crown */
     .header { text-align:center;margin-bottom:20px;position:relative; }
     h1 { 
       font-size:2.8em;margin:10px 0;font-weight:800;
@@ -47,7 +46,6 @@
     .crown { font-size:2em;display:inline-block;animation:bounce 2s infinite; }
     @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
     
-    /* Stats bar */
     .stats { 
       display:flex;justify-content:space-around;margin:20px 0;gap:10px;
       animation:fadeIn 0.6s ease 0.2s both;
@@ -62,7 +60,6 @@
     .stat-value { font-size:2em;font-weight:700;color:var(--accent);display:block; }
     .stat-label { font-size:0.85em;opacity:0.9;margin-top:5px; }
     
-    /* Main prompt card with glow effect */
     #promptCard { 
       background:var(--card-bg);backdrop-filter:blur(20px);
       padding:30px;border-radius:24px;min-height:180px;
@@ -90,7 +87,6 @@
       text-transform:uppercase;letter-spacing:1px;
     }
     
-    /* Buttons with better animations */
     .btn-group { display:flex;flex-direction:column;gap:12px;margin:20px 0; }
     .btn { 
       width:100%;padding:16px;border:none;border-radius:16px;
@@ -116,7 +112,6 @@
     }
     .btn-secondary:hover { transform:translateY(-2px);border-color:var(--accent); }
     
-    /* Category selector */
     .categories { 
       display:flex;gap:8px;flex-wrap:wrap;margin:20px 0;
       animation:fadeIn 0.6s ease 0.6s both;
@@ -132,7 +127,6 @@
       border-color:transparent;box-shadow:0 4px 12px var(--glow);
     }
     
-    /* Achievement popup */
     .achievement { 
       position:fixed;top:-100px;left:50%;transform:translateX(-50%);
       background:linear-gradient(135deg,var(--gold),#ffa500);
@@ -144,7 +138,6 @@
     .achievement.show { top:20px; }
     .achievement-icon { font-size:2em;animation:rotate 1s ease; }
     
-    /* Theme selector */
     .theme-selector { 
       display:flex;gap:10px;justify-content:center;margin:20px 0;
       animation:fadeIn 0.6s ease 0.7s both;
@@ -161,7 +154,6 @@
     .theme-cosmic { background:linear-gradient(135deg,#232526,#414345); }
     .theme-ocean { background:linear-gradient(135deg,#2e3192,#1bffff); }
     
-    /* Favorites section */
     .favorites { 
       margin:25px 0;animation:fadeIn 0.6s ease 0.8s both;
     }
@@ -181,25 +173,17 @@
       padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;
     }
     
-    /* Timer and challenge mode */
     .timer { 
       font-size:3em;font-weight:800;text-align:center;margin:20px 0;
       color:var(--accent);text-shadow:0 0 20px var(--glow);
       font-variant-numeric:tabular-nums;
     }
-    .challenge-mode { 
-      background:linear-gradient(135deg,#ff6b6b,#ee5a6f);
-      padding:20px;border-radius:16px;margin:20px 0;text-align:center;
-      box-shadow:0 8px 32px rgba(0,0,0,0.4);
-    }
     
     @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
     @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
     
-    /* Confetti canvas */
     #confetti { position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999; }
     
-    /* Leaderboard */
     .leaderboard { 
       background:var(--card-bg);backdrop-filter:blur(20px);
       padding:20px;border-radius:16px;margin:20px 0;
@@ -212,7 +196,6 @@
     }
     .leaderboard-rank { font-weight:700;color:var(--gold);font-size:1.2em; }
     
-    /* Modal */
     .modal { 
       display:none;position:fixed;top:0;left:0;width:100%;height:100%;
       background:rgba(0,0,0,0.8);z-index:2000;align-items:center;justify-content:center;
@@ -370,7 +353,7 @@
     ]
   };
   
-  // State management
+  // State management - uses window.storage if available, falls back to memory
   let state = {
     streak: 0,
     totalPrompts: 0,
@@ -381,9 +364,12 @@
     achievements: [],
     lastDate: null,
     theme: "default",
-    challengeTime: 60,
-    leaderboard: []
+    leaderboard: [],
+    lastBonus: null
   };
+  
+  // Check if we're in Farcaster environment with storage
+  const hasStorage = typeof window.storage !== 'undefined';
   
   // DOM elements
   const el = {
@@ -401,28 +387,32 @@
     challengePrompt: document.getElementById("challengePrompt")
   };
   
-  // Initialize from storage
-  async function initStorage() {
+  // Storage wrapper
+  async function loadState() {
+    if (!hasStorage) {
+      console.log('Using in-memory storage (deploy to Farcaster for persistence)');
+      return;
+    }
+    
     try {
       const saved = await window.storage.get('dailyprompt-state');
       if (saved && saved.value) {
         const data = JSON.parse(saved.value);
         state = {...state, ...data};
-        updateUI();
       }
       
-      // Load leaderboard
       const lb = await window.storage.get('dailyprompt-leaderboard', true);
       if (lb && lb.value) {
         state.leaderboard = JSON.parse(lb.value);
       }
     } catch (err) {
-      console.log('No saved state, starting fresh');
+      console.log('No saved state');
     }
   }
   
-  // Save to storage
   async function saveState() {
+    if (!hasStorage) return;
+    
     try {
       await window.storage.set('dailyprompt-state', JSON.stringify(state));
     } catch (err) {
@@ -430,13 +420,13 @@
     }
   }
   
-  // Update leaderboard
   async function updateLeaderboard() {
+    if (!hasStorage) return;
+    
     try {
       const lb = await window.storage.get('dailyprompt-leaderboard', true);
       let leaderboard = lb && lb.value ? JSON.parse(lb.value) : [];
       
-      // Add/update current user
       const userIndex = leaderboard.findIndex(u => u.id === 'user');
       const userData = {
         id: 'user',
@@ -453,7 +443,6 @@
         leaderboard.push(userData);
       }
       
-      // Sort by score
       leaderboard.sort((a, b) => b.score - a.score);
       leaderboard = leaderboard.slice(0, 10);
       
@@ -464,13 +453,11 @@
     }
   }
   
-  // Update UI
   function updateUI() {
     el.streakCount.textContent = state.streak;
     el.totalPrompts.textContent = state.totalPrompts;
     el.level.textContent = state.level;
     
-    // Update favorites
     el.favoritesList.innerHTML = state.favorites.length === 0 
       ? '<p style="text-align:center;opacity:0.6;">No favorites yet</p>'
       : state.favorites.map((fav, i) => `
@@ -481,7 +468,6 @@
         `).join('');
   }
   
-  // Get random prompt
   function getRandomPrompt(category) {
     let pool = [];
     if (category === 'all') {
@@ -492,7 +478,6 @@
     return pool[Math.floor(Math.random() * pool.length)];
   }
   
-  // Update streak
   function updateStreak() {
     const today = new Date().toISOString().slice(0, 10);
     if (state.lastDate !== today) {
@@ -509,7 +494,6 @@
     }
   }
   
-  // Check achievements
   function checkAchievements(type, value) {
     const achievements = {
       streak: [
@@ -539,14 +523,12 @@
     });
   }
   
-  // Show achievement
   function showAchievement(msg) {
     el.achievementText.textContent = msg;
     el.achievement.classList.add('show');
     setTimeout(() => el.achievement.classList.remove('show'), 3000);
   }
   
-  // Confetti effect
   function launchConfetti() {
     const canvas = document.getElementById('confetti');
     const ctx = canvas.getContext('2d');
@@ -588,7 +570,7 @@
   }
   
   // Event listeners
-  document.getElementById('surpriseBtn').onclick = () => {
+  document.getElementById('surpriseBtn').addEventListener('click', () => {
     const prompt = getRandomPrompt(state.currentCategory);
     state.currentPrompt = prompt;
     
@@ -610,18 +592,18 @@
       saveState();
       updateLeaderboard();
     }, 200);
-  };
+  });
   
-  document.getElementById('favoriteBtn').onclick = () => {
+  document.getElementById('favoriteBtn').addEventListener('click', () => {
     if (state.currentPrompt && !state.favorites.includes(state.currentPrompt)) {
       state.favorites.push(state.currentPrompt);
       updateUI();
       saveState();
       showAchievement("Added to favorites! 💖");
     }
-  };
+  });
   
-  document.getElementById('shareBtn').onclick = () => {
+  document.getElementById('shareBtn').addEventListener('click', () => {
     if (navigator.share) {
       navigator.share({
         title: 'DailyPrompt',
@@ -631,7 +613,7 @@
       navigator.clipboard.writeText(state.currentPrompt);
       showAchievement("Copied to clipboard! 📋");
     }
-  };
+  });
   
   window.deleteFavorite = (index) => {
     state.favorites.splice(index, 1);
@@ -639,39 +621,38 @@
     saveState();
   };
   
-  // Category buttons
   document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.onclick = () => {
+    btn.addEventListener('click', () => {
       document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.currentCategory = btn.dataset.category;
-    };
+    });
   });
   
-  // Theme buttons
   document.querySelectorAll('.theme-btn').forEach(btn => {
-    btn.onclick = () => {
+    btn.addEventListener('click', () => {
       document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const theme = btn.dataset.theme;
       document.body.className = theme === 'default' ? '' : theme;
       state.theme = theme;
       saveState();
-    };
+    });
   });
   
-  // Challenge mode
   let challengeInterval;
-  document.getElementById('challengeBtn').onclick = () => {
+  document.getElementById('challengeBtn').addEventListener('click', () => {
     const prompt = getRandomPrompt('challenge');
     el.challengePrompt.textContent = prompt;
     el.timer.textContent = '60';
     el.challengeModal.classList.add('show');
-  };
+  });
   
-  document.getElementById('startChallenge').onclick = () => {
+  document.getElementById('startChallenge').addEventListener('click', () => {
     let time = 60;
-    document.getElementById('startChallenge').disabled = true;
+    const startBtn = document.getElementById('startChallenge');
+    startBtn.disabled = true;
+    startBtn.textContent = 'Challenge Running...';
     
     challengeInterval = setInterval(() => {
       time--;
@@ -682,52 +663,99 @@
         showAchievement("Challenge complete! You're amazing! 🎉");
         launchConfetti();
         el.challengeModal.classList.remove('show');
-        document.getElementById('startChallenge').disabled = false;
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start Challenge!';
         state.totalPrompts++;
         updateUI();
         saveState();
         updateLeaderboard();
       }
     }, 1000);
-  };
+  });
   
-  document.getElementById('closeChallenge').onclick = () => {
+  document.getElementById('closeChallenge').addEventListener('click', () => {
     clearInterval(challengeInterval);
     el.challengeModal.classList.remove('show');
-    document.getElementById('startChallenge').disabled = false;
-  };
+    const startBtn = document.getElementById('startChallenge');
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start Challenge!';
+  });
   
-  // Leaderboard
-  document.getElementById('leaderboardBtn').onclick = async () => {
+  document.getElementById('leaderboardBtn').addEventListener('click', async () => {
     await updateLeaderboard();
     
-    const leaderboardHTML = state.leaderboard.map((user, i) => {
-      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
-      return `
-        <div class="leaderboard-item">
-          <span><span class="leaderboard-rank">${medal}</span> ${user.name}</span>
-          <span style="font-weight:700;">${user.score} pts</span>
-        </div>
-      `;
-    }).join('');
+    const leaderboardHTML = state.leaderboard.length > 0 
+      ? state.leaderboard.map((user, i) => {
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+          return `
+            <div class="leaderboard-item">
+              <span><span class="leaderboard-rank">${medal}</span> ${user.name}</span>
+              <span style="font-weight:700;">${user.score} pts</span>
+            </div>
+          `;
+        }).join('')
+      : '<p style="text-align:center;opacity:0.8;">Be the first on the leaderboard!</p>';
     
-    document.getElementById('leaderboardList').innerHTML = leaderboardHTML || '<p style="text-align:center;">Be the first on the leaderboard!</p>';
+    document.getElementById('leaderboardList').innerHTML = leaderboardHTML;
     el.leaderboardModal.classList.add('show');
-  };
+  });
   
-  document.getElementById('closeLeaderboard').onclick = () => {
+  document.getElementById('closeLeaderboard').addEventListener('click', () => {
     el.leaderboardModal.classList.remove('show');
-  };
+  });
+  
+  function checkDailyBonus() {
+    const today = new Date().toISOString().slice(0, 10);
+    const lastBonus = state.lastBonus || null;
+    
+    if (lastBonus !== today) {
+      setTimeout(() => {
+        showAchievement("Daily Bonus! +10 XP for coming back! 🎁");
+        state.lastBonus = today;
+        saveState();
+      }, 2000);
+    }
+  }
   
   // Initialize
-  initStorage().then(() => {
+  loadState().then(() => {
     updateUI();
     if (state.theme !== 'default') {
       document.body.className = state.theme;
-      document.querySelector(`[data-theme="${state.theme}"]`).classList.add('active');
-      document.querySelector('[data-theme="default"]').classList.remove('active');
+      const themeBtn = document.querySelector(`[data-theme="${state.theme}"]`);
+      if (themeBtn) {
+        document.querySelector('[data-theme="default"]').classList.remove('active');
+        themeBtn.classList.add('active');
+      }
     }
+    checkDailyBonus();
   });
   
-  // Auto-save every 30 seconds
   setInterval(saveState, 30000);
+</script>
+
+<!-- Farcaster SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+<script>
+  function initSDK() {
+    if (window.frame?.sdk?.actions?.ready) {
+      try {
+        window.frame.sdk.actions.ready();
+        console.log("✅ Farcaster SDK ready");
+      } catch (err) {
+        console.error("❌ SDK error:", err);
+      }
+    } else {
+      setTimeout(initSDK, 100);
+    }
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSDK);
+  } else {
+    initSDK();
+  }
+</script>
+
+</body>
+</html>

@@ -409,42 +409,45 @@
   };
   
   // Storage wrapper
- async function loadState() {
-  if (!hasStorage) {
-    console.log('Using in-memory storage (deploy to Farcaster for persistence)');
-    return;
-  }
-  
-  try {
-    const saved = await window.storage.get('dailyprompt-state');
-    if (saved && saved.value) {
-      const data = JSON.parse(saved.value);
-      // Merge saved data into state, preserving all fields
-      state = {
-        streak: data.streak || 0,
-        totalPrompts: data.totalPrompts || 0,
-        level: data.level || 1,
-        currentPrompt: data.currentPrompt || "",
-        currentCategory: data.currentCategory || "all",
-        favorites: data.favorites || [],
-        achievements: data.achievements || [],
-        lastDate: data.lastDate || null,
-        theme: data.theme || "default",
-        leaderboard: data.leaderboard || [],
-        lastBonus: data.lastBonus || null
-      };
-      console.log('✅ State loaded:', state);
+  async function loadState() {
+    if (!hasStorage) {
+      console.log('Using in-memory storage (deploy to Farcaster for persistence)');
+      return;
     }
     
-    const lb = await window.storage.get('dailyprompt-leaderboard', true);
-    if (lb && lb.value) {
-      state.leaderboard = JSON.parse(lb.value);
+    try {
+      const saved = await window.storage.get('dailyprompt-state');
+      if (saved && saved.value) {
+        const data = JSON.parse(saved.value);
+        state = {...state, ...data};
+      }
+      
+      const lb = await window.storage.get('dailyprompt-leaderboard', true);
+      if (lb && lb.value) {
+        state.leaderboard = JSON.parse(lb.value);
+      }
+    } catch (err) {
+      console.log('No saved state');
     }
-  } catch (err) {
-    console.log('No saved state found, starting fresh');
   }
-}
-
+  
+  async function saveState() {
+    if (!hasStorage) return;
+    
+    try {
+      await window.storage.set('dailyprompt-state', JSON.stringify(state));
+    } catch (err) {
+      console.error('Save failed:', err);
+    }
+  }
+  
+  async function updateLeaderboard() {
+    if (!hasStorage) return;
+    
+    try {
+      const lb = await window.storage.get('dailyprompt-leaderboard', true);
+      let leaderboard = lb && lb.value ? JSON.parse(lb.value) : [];
+      
       // Use actual Farcaster user info
       const userId = currentUser.fid || 'local';
       const userIndex = leaderboard.findIndex(u => u.id === userId);
@@ -773,50 +776,23 @@
   }
   
   // Initialize
-// Initialize - IMPORTANT: Wait for everything to load properly
-async function init() {
-  try {
-    await initUser();
-    await loadState();
-    
-    // Update UI with loaded state
+  initUser().then(() => {
+    return loadState();
+  }).then(() => {
     updateUI();
-    
-    // Apply saved theme
-    if (state.theme && state.theme !== 'default') {
+    if (state.theme !== 'default') {
       document.body.className = state.theme;
-      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
       const themeBtn = document.querySelector(`[data-theme="${state.theme}"]`);
-      if (themeBtn) themeBtn.classList.add('active');
+      if (themeBtn) {
+        document.querySelector('[data-theme="default"]').classList.remove('active');
+        themeBtn.classList.add('active');
+      }
     }
-    
-    // Apply saved category
-    if (state.currentCategory) {
-      document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-      const catBtn = document.querySelector(`[data-category="${state.currentCategory}"]`);
-      if (catBtn) catBtn.classList.add('active');
-    }
-    
-    // Show last prompt if exists
-    if (state.currentPrompt) {
-      el.prompt.textContent = state.currentPrompt;
-      el.category.textContent = state.currentCategory.toUpperCase();
-      el.category.style.display = 'inline-block';
-    }
-    
     checkDailyBonus();
-    console.log('✅ App initialized with state:', state);
-  } catch (err) {
-    console.error('❌ Initialization error:', err);
-  }
-}
-
-// Run initialization
-init();
-
-// Auto-save every 30 seconds
-setInterval(saveState, 30000);
-
+  });
+  
+  setInterval(saveState, 30000);
+</script>
 
 <!-- Farcaster SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
@@ -843,5 +819,3 @@ setInterval(saveState, 30000);
 
 </body>
 </html>
-
-
